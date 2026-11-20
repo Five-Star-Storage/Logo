@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Five Star Storage — JPEG Logo Upload</title>
+  <style>
+    :root {
+      --green: #006937;
+      --ink: #231f20;
+      --paper: #f5f5f5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    main {
+      width: min(760px, 100%);
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+      padding: 32px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      color: var(--green);
+      font-size: clamp(24px, 5vw, 36px);
+    }
+
+    p { margin: 0 0 24px; }
+
+    .drop-zone {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+      border: 2px dashed #94a69b;
+      border-radius: 12px;
+      background: #fafcfb;
+      cursor: pointer;
+      text-align: center;
+      transition: 0.2s ease;
+      padding: 24px;
+    }
+
+    .drop-zone.dragging {
+      border-color: var(--green);
+      background: #edf7f1;
+    }
+
+    .drop-zone strong { color: var(--green); }
+
+    input[type="file"] {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .preview-wrap {
+      display: none;
+      margin-top: 24px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 16px;
+      background: #fff;
+      text-align: center;
+    }
+
+    .preview-wrap.visible { display: block; }
+
+    #preview {
+      display: block;
+      max-width: 100%;
+      max-height: 320px;
+      margin: 0 auto;
+    }
+
+    .file-info {
+      margin-top: 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Upload Your JPEG Logo</h1>
+    <p>Select or drag in a .jpg or .jpeg image to preview it here.</p>
+
+    <label class="drop-zone" id="dropZone" for="logoFile">
+      <span><strong>Choose a JPEG</strong><br>or drop it here</span>
+      <input id="logoFile" type="file" accept="image/jpeg,.jpg,.jpeg">
+    </label>
+
+    <section class="preview-wrap" id="previewWrap" aria-live="polite">
+      <img id="preview" alt="Uploaded logo preview">
+      <div class="file-info" id="fileInfo"></div>
+    </section>
+  </main>
+
+  <script>
+    const fileInput = document.getElementById('logoFile');
+    const dropZone = document.getElementById('dropZone');
+    const preview = document.getElementById('preview');
+    const previewWrap = document.getElementById('previewWrap');
+    const fileInfo = document.getElementById('fileInfo');
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return `${bytes} bytes`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+    }
+
+    function showFile(file) {
+      if (!file) return;
+
+      if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
+        alert('Please choose a JPEG (.jpg or .jpeg) file.');
+        fileInput.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        preview.src = reader.result;
+        previewWrap.classList.add('visible');
+        fileInfo.textContent = `${file.name} — ${formatBytes(file.size)}`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    fileInput.addEventListener('change', () => showFile(fileInput.files[0]));
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+        dropZone.classList.add('dragging');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+        dropZone.classList.remove('dragging');
+      });
+    });
+
+    dropZone.addEventListener('drop', event => {
+      showFile(event.dataTransfer.files[0]);
+    });
+  </script>
+</body>
+</html>
